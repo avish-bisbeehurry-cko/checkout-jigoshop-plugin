@@ -9,6 +9,7 @@ class models_methods_creditcard extends models_methods_Abstract{
          $this ->id = 'checkoutapipayment';
          $this->has_fields = true;
          $this->pci_enable = 'no';
+
          //parent::__construct();
 
         add_action ( 'jigoshop_checkout_order_review' , array ( $this , 'generatePaymentToken' ) );
@@ -28,19 +29,22 @@ class models_methods_creditcard extends models_methods_Abstract{
  	public function payment_fields()
     {
 
-        $amount = (int)(jigoshop_cart::$total)*100;
+        $amount = (JIGOSHOP_CART::$total)*100;
         $current_user = wp_get_current_user();
         $currencyCode = Jigoshop_Base::get_options()->get('jigoshop_currency');
-
+        $paymentToken = $this->generatePaymentToken();
         $email = "Email@youremail.com";
         $name = "Card holder name";
         if(isset($current_user->data)){
             $email = $current_user->user_email;
             $name = $current_user->user_nicename;
-
         }
 
-        $paymentToken = $this->generatePaymentToken();
+        if(CHECKOUTAPI_LOCALPAYMENT == 'yes'){
+            $paymentMode = 'mixed';
+        } else {
+            $paymentMode = 'card';
+        }
 
         ?>
         <div style="" class="widget-container">
@@ -61,7 +65,7 @@ class models_methods_creditcard extends models_methods_Abstract{
                         currency: '<?php echo $currencyCode ?>',
                         customerEmail: '<?php echo $email ?>',
                         customerName: '<?php echo $name ?>',
-                        paymentMode: 'card',
+                        paymentMode: '<?php echo $paymentMode ?>',
                         title: '<?php  ?>',
                         subtitle: '<?php echo __('Please enter your credit card details') ?>',
                         widgetContainerSelector: '.widget-container',
@@ -113,20 +117,26 @@ class models_methods_creditcard extends models_methods_Abstract{
                         });
                     });
                 })(jQuery);
+
             </script>
-            <script src="https://www.checkout.com/cdn/js/checkout.js" async ></script>
-        </div>
+
         <?php
 
+            if( CHECKOUTAPI_MODE == 'live' ){ ?>
+                <script src="https://www.checkout.com/cdn/js/checkout.js" async ></script>
+           <?php } else { ?>
+                    <script src="http://sandbox.checkout.com/js/v1/checkout.js" async ></script>
+            <?php    } ?>
 
+        </div>
+        <?php
  	}
 
     public function generatePaymentToken()
     {
          $config = array();
-         $amountCents = (int)(jigoshop_cart::$total)*100;
+         $amountCents = (jigoshop_cart::$total)*100;
          $currencyCode = Jigoshop_Base::get_options()->get('jigoshop_currency');
-
          $config['authorization'] = CHECKOUTAPI_SECRET_KEY;
          $config['mode'] = CHECKOUTAPI_MODE;
          $config['timeout'] = CHECKOUTAPI_TIMEOUT;
@@ -160,9 +170,7 @@ class models_methods_creditcard extends models_methods_Abstract{
             echo '<div class="jigoshop_error">'.$error_message.'</div>';
         }
 
-
         return $paymentToken;
-
     }
 
  	public function process_payment($order_id)

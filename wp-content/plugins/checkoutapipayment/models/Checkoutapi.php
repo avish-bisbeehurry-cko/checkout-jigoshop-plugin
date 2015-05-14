@@ -24,26 +24,27 @@ abstract class models_Checkoutapi extends jigoshop_payment_gateway implements mo
         define("CHECKOUTAPI_TIMEOUT", $this->gateway_timeout);
         define("CHECKOUTAPI_ISPCI", $this->pci_enable);
         define("CHECKOUTAPI_MODE", $this->mode);
+        define("CHECKOUTAPI_LOCALPAYMENT", $this->local_payment);
         add_action ( 'valid-checkoutapipayment-webhook' , array ( $this , 'valid_webhook' ) );
 
     }
 
     private function _init()
     {
-        $options = Jigoshop_Base::get_options();
-        $this->id = 'checkoutapipayment';
-        $this->has_fields = false;
-        $this->enabled = $options->get('jigoshop_checkoutapipayment_enabled');
-        $this->title = $options->get('jigoshop_checkoutapipayment_title');
-        $this->description = $options->get('jigoshop_checkoutapipayment_descriptions');
-        $this->mode = $options->get('jigoshop_checkoutapipayment_mode');
-        $this->secret_key = $options->get('jigoshop_checkoutapipayment_secret_key');
-        $this->public_key = $options->get('jigoshop_checkoutapipayment_public_key');
-        $this->local_payment = $options->get('jigoshop_checkoutapipayment_local_payment');
-        $this->pci_enable = $options->get('jigoshop_checkoutapipayment_pci_enable');
-        $this->payment_action = $options->get('jigoshop_checkoutapipayment_payment_action');
-        $this->auto_capture = $options->get('jigoshop_checkoutapipayment_auto_capture');
-        $this->gateway_timeout = $options->get('jigoshop_checkoutapipayment_gateway_timeout');
+        $options                = Jigoshop_Base::get_options();
+        $this->id               = 'checkoutapipayment';
+        $this->has_fields       = false;
+        $this->enabled          = $options->get('jigoshop_checkoutapipayment_enabled');
+        $this->title            = $options->get('jigoshop_checkoutapipayment_title');
+        $this->description      = $options->get('jigoshop_checkoutapipayment_descriptions');
+        $this->mode             = $options->get('jigoshop_checkoutapipayment_mode');
+        $this->secret_key       = $options->get('jigoshop_checkoutapipayment_secret_key');
+        $this->public_key       = $options->get('jigoshop_checkoutapipayment_public_key');
+        $this->local_payment    = $options->get('jigoshop_checkoutapipayment_local_payment');
+        $this->pci_enable       = $options->get('jigoshop_checkoutapipayment_pci_enable');
+        $this->payment_action   = $options->get('jigoshop_checkoutapipayment_payment_action');
+        $this->auto_capture     = $options->get('jigoshop_checkoutapipayment_auto_capture');
+        $this->gateway_timeout  = $options->get('jigoshop_checkoutapipayment_gateway_timeout');
     }
 
     public function get_default_options()
@@ -97,11 +98,10 @@ abstract class models_Checkoutapi extends jigoshop_payment_gateway implements mo
             'desc' => '',
             'tip' => '',
             'id' => 'jigoshop_checkoutapipayment_mode',
-            'std' => '',
+            'std' => 'sandbox',
             'type' => 'select',
             'choices' => array(
-                'test' => __('Test', 'jigoshop'),
-                'preprod' => __('Preprod', 'jigoshop'),
+                'sandbox' => __('Sandbox', 'jigoshop'),
                 'live' => __('Live', 'jigoshop')
             )
         );
@@ -125,15 +125,15 @@ abstract class models_Checkoutapi extends jigoshop_payment_gateway implements mo
         );
 
         $defaults[] = array(
-            'name' => __('Local Payment Enable', 'jigoshop'),
+            'name' => __('Enable Local Payment', 'jigoshop'),
             'desc' => '',
             'tip' => '',
             'id' => 'jigoshop_checkoutapipayment_local_payment',
             'std' => 'no',
-            'type' => 'checkbox',
+            'type' => 'select',
             'choices' => array(
+                'yes' => __('Yes', 'jigoshop'),
                 'no' => __('No', 'jigoshop'),
-                'yes' => __('Yes', 'jigoshop')
             )
         );
 
@@ -199,15 +199,10 @@ abstract class models_Checkoutapi extends jigoshop_payment_gateway implements mo
     {
         $configType =  $this->pci_enable;
 
-       // print_r($configType); die();
-
         if($configType) {
             switch ($configType) {
                 case 'yes':
                     $this->_methodType = 'models_methods_creditcardpci';
-                    break;
-                case 'no':
-                    $this->_methodType = 'models_methods_creditcard';
                     break;
                 default:
                     $this->_methodType = 'models_methods_creditcard';

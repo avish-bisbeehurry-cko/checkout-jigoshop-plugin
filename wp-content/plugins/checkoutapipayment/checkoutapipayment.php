@@ -107,16 +107,16 @@ function checkoutapipayment_init()
             exit();
         }
 
-//        private function _process ()
-//        {
-//            $config[ 'chargeId' ] = $_GET[ 'chargeId' ];
-//            $config[ 'authorization' ] = $this->checkoutapipayment_secretkey;
-//            $Api = CheckoutApi_Api::getApi ( array ( 'mode' => $this->checkoutapipayment_endpoint ) );
-//            $respondBody = $Api->getCharge ( $config );
-//
-//            $json = $respondBody->getRawOutput ();
-//            return $json;
-//        }
+        private function _process ()
+        {
+            $config[ 'chargeId' ] = $_GET[ 'chargeId' ];
+            $config[ 'authorization' ] = $this->checkoutapipayment_secretkey;
+            $Api = CheckoutApi_Api::getApi ( array ( 'mode' => $this->checkoutapipayment_endpoint ) );
+            $respondBody = $Api->getCharge ( $config );
+
+            $json = $respondBody->getRawOutput ();
+            return $json;
+        }
 
 
     }
